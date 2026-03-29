@@ -230,7 +230,6 @@ def identify_events(
     runs = [r for r in runs if r['duration'] >= min_duration]
 
     if len(runs) == 0:
-        _logger.warning("No events found with specified criteria")
         return pd.DataFrame()
 
     # Calculate inter-arrival times
@@ -501,10 +500,14 @@ def calculate_events_spatial(
 
     # Process each location
     for i in range(n_space):
-        if i % 1000 == 0:
+        if i % 10000 == 0:
             _logger.info(f"Processing location {i}/{n_space}")
 
         ts = stacked.isel(space=i).values
+
+        # Skip NaN-only pixels (ocean/outside boundary)
+        if np.all(np.isnan(ts)):
+            continue
 
         # Identify events
         events_df = identify_events(ts, threshold=threshold, min_duration=min_duration)
@@ -761,10 +764,14 @@ def calculate_period_statistics(
 
     # Process each location
     for i in range(n_space):
-        if i % 1000 == 0:
+        if i % 10000 == 0:
             _logger.info(f"Processing location {i}/{n_space}")
 
         ts = stacked.isel(space=i).values
+
+        # Skip NaN-only pixels (ocean/outside boundary)
+        if np.all(np.isnan(ts)):
+            continue
 
         # Identify events
         events_df = identify_events(ts, threshold=threshold, min_duration=min_duration)

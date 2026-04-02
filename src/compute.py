@@ -586,6 +586,9 @@ def compute_index_parallel(
             }
         params_dict['distribution'] = dist
 
+    # Free scaled_data (can be as large as input array)
+    del scaled_data
+
     # Trim result back to original time length if we padded
     if remainder:
         result = result[:n_time_original]
@@ -600,8 +603,7 @@ def compute_index_parallel(
     _logger.info("Index computation complete")
 
     # Explicit garbage collection to free intermediate arrays
-    if memory_efficient:
-        gc.collect()
+    gc.collect()
 
     return result, params_dict
 

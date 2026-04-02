@@ -23,6 +23,7 @@ References:
       Evapotranspiration Index. Journal of Climate, 23(7), 1696-1718.
 """
 
+import gc
 import os
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Union
@@ -472,6 +473,10 @@ def spi(
 
     _logger.info(f"SPI-{scale} computation complete. Output shape: {result.shape}")
 
+    # Release intermediate arrays
+    del precip_array, result
+    gc.collect()
+
     if return_params:
         return result_da, params
     else:
@@ -824,6 +829,10 @@ def spei(
         )
 
     _logger.info(f"SPEI-{scale} computation complete. Output shape: {result.shape}")
+
+    # Release intermediate arrays
+    del water_balance, result
+    gc.collect()
 
     if return_params:
         return result_da, params
@@ -1301,6 +1310,8 @@ def estimate_memory_requirements(
             precip_vars = [v for v in ds.data_vars
                           if any(x in v.lower() for x in PRECIP_VAR_PATTERNS)]
             var_name = precip_vars[0] if precip_vars else list(ds.data_vars)[0]
-        return estimate_memory_from_data(ds, var_name, available_memory_gb)
+        result = estimate_memory_from_data(ds, var_name, available_memory_gb)
+        ds.close()
+        return result
     else:
         return estimate_memory_from_data(precip, var_name, available_memory_gb)

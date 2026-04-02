@@ -175,9 +175,26 @@ MAX_SINGLE_CHUNK_GB = 2.0
 #   DEFAULT_METADATA['institution'] = 'My University'
 #   DEFAULT_METADATA['references'] = 'McKee et al. (1993)'
 DEFAULT_METADATA = {
-    'institution': '',
-    'source': 'precip-index package',
     'Conventions': 'CF-1.8',
-    'references': '',
-    'comment': '',
+    'cdm_data_type': 'GRID',
+    'institution': 'GOST/DEC Data Group, The World Bank',
+    'source': 'TerraClimate monthly gridded data (Abatzoglou et al., 2018)',
+    'references': (
+        'McKee, T.B., Doesken, N.J., Kleist, J. (1993). '
+        'The relationship of drought frequency and duration to time scales. '
+        '8th Conference on Applied Climatology; '
+        'Vicente-Serrano, S.M., Begueria, S., Lopez-Moreno, J.I. (2010). '
+        'A Multiscalar Drought Index Sensitive to Global Warming: '
+        'The Standardized Precipitation Evapotranspiration Index. '
+        'Journal of Climate, 23(7), 1696-1718'
+    ),
+    'comment': (
+        'Computed using precip-index package. '
+        'Calibration period defines the baseline for distribution fitting. '
+        'The data is developed to support hydrometeorological monitoring '
+        'and assessment of extreme dry and wet periods.'
+    ),
+    'creator_name': 'Benny Istanto',
+    'creator_role': 'Climate Geographer',
+    'creator_email': 'bistanto@worldbank.org',
 }

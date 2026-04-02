@@ -526,10 +526,23 @@ class ChunkedProcessor:
                 distribution=dist
             )
 
+        # Release parameter arrays and input data
+        if save_params and 'all_params' in dir():
+            del all_params
+        del precip_da
+        gc.collect()
+
+        # Close input file handle to release lock
+        if isinstance(precip, (str, Path)):
+            ds.close()
+
         self._log(f"Chunked SPI computation complete: {output_path}")
 
-        # Return the result
-        return xr.open_dataset(output_path)
+        # Load into memory and close file handle so the file is not locked
+        result = xr.open_dataset(output_path)
+        result.load()
+        result.close()
+        return result
 
     def _compute_single_chunk(
         self,
@@ -579,7 +592,11 @@ class ChunkedProcessor:
                 distribution=distribution
             )
 
-        return xr.open_dataset(output_path)
+        # Load into memory and close file handle so the file is not locked
+        ds = xr.open_dataset(output_path)
+        ds.load()
+        ds.close()
+        return ds
 
     def compute_spei_chunked(
         self,
@@ -801,8 +818,25 @@ class ChunkedProcessor:
                 distribution=dist
             )
 
+        # Release parameter arrays and input data
+        if save_params and 'all_params' in dir():
+            del all_params
+        del precip_da, pet_da
+        gc.collect()
+
+        # Close input file handles to release locks
+        if isinstance(precip, (str, Path)):
+            precip_ds.close()
+        if isinstance(pet, (str, Path)):
+            pet_ds.close()
+
         self._log(f"Chunked SPEI computation complete: {output_path}")
-        return xr.open_dataset(output_path)
+
+        # Load into memory and close file handle so the file is not locked
+        ds = xr.open_dataset(output_path)
+        ds.load()
+        ds.close()
+        return ds
 
     def _find_var(self, ds: xr.Dataset, patterns: List[str]) -> str:
         """Find variable matching patterns."""

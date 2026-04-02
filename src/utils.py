@@ -1183,9 +1183,58 @@ def get_fitting_param_attributes(
                      f"{scale}-{periodicity.unit()} scale",
     }
 
+    # Plain-language explanations for users unfamiliar with distribution theory
+    comments = {
+        'alpha': (
+            "Controls the shape of the probability curve. "
+            "Higher alpha means the distribution is more symmetric and bell-shaped; "
+            "lower alpha means it is more skewed with a longer tail toward high values. "
+            "Fitted from the calibration period data for each calendar "
+            f"{periodicity.unit()} independently."
+        ),
+        'beta': (
+            "Controls the spread (width) of the probability curve. "
+            "Higher beta means greater variability in precipitation or water balance "
+            "for that calendar period. Relates to the mean and variance of the data: "
+            "beta = mean / alpha."
+        ),
+        'skew': (
+            "Measures the asymmetry of the distribution. "
+            "Negative skew means the tail extends toward drier (lower) values; "
+            "positive skew means the tail extends toward wetter (higher) values. "
+            "Near zero indicates a nearly symmetric distribution."
+        ),
+        'loc': (
+            "Shifts the entire distribution left or right along the value axis. "
+            "For SPEI (water balance = P - PET), this often represents the typical "
+            "deficit or surplus for a given calendar period. "
+            "A more negative loc indicates a drier baseline."
+        ),
+        'scale': (
+            "Controls the spread (width) of the probability curve, similar to "
+            "standard deviation. Larger values indicate greater variability in "
+            "the underlying precipitation or water balance data for that "
+            "calendar period."
+        ),
+        'shape': (
+            "Controls the shape of the probability curve, determining how peaked "
+            "or flat the distribution is and the behavior of its tails. "
+            "Fitted from the calibration period data for each calendar "
+            f"{periodicity.unit()} independently."
+        ),
+        'prob_zero': (
+            "Fraction of time steps with zero (or effectively zero) values "
+            "during the calibration period. Used in the mixed distribution approach: "
+            "P(X <= x) = prob_zero + (1 - prob_zero) * P(X <= x | X > 0). "
+            "High values (e.g., > 0.5) indicate a dry-season month where "
+            "more than half of years had no precipitation."
+        ),
+    }
+
     return {
         'long_name': f"{dist_name} {param} parameter ({scale}-{periodicity.unit()})",
         'description': descriptions.get(param, f"{param} parameter"),
+        'comment': comments.get(param, ''),
         'units': '1',
     }
 

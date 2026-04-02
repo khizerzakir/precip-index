@@ -1,0 +1,243 @@
+---
+title: "CF Convention Compliance"
+---
+
+## Overview
+
+Output NetCDF files from `precip-index` declare **CF-1.8** (`Conventions: CF-1.8`) and follow CF Convention guidelines for most attributes. This page documents what is fully compliant, what uses custom extensions, and what impact non-standard attributes may have on third-party tools.
+
+The [CF (Climate and Forecast) Convention](https://cf-convention.github.io/) defines metadata standards for NetCDF files to promote interoperability across climate data tools. Compliance is checked against the [CF Standard Name Table](https://cf-convention.github.io/Data/cf-standard-names/current/build/cf-standard-name-table.html).
+
+
+## Compliance Summary
+
+| Category | Status | Notes |
+|----------|--------|-------|
+| Global attributes | **Compliant** | `Conventions`, `title`, `history`, `institution`, `source`, `references` |
+| Coordinate names | **Compliant** | `time`, `lat`, `lon` follow CF naming |
+| Coordinate metadata | **Inherited** | `standard_name`, `units`, `axis` passed through from input data |
+| Data variable `long_name` | **Compliant** | Free-form descriptive name |
+| Data variable `units` | **Compliant** | `'1'` (CF standard for dimensionless quantities) |
+| Data variable `valid_min/max` | **Compliant** | CF-recognized range attributes |
+| Data variable `standard_name` | **Custom** | Not from CF Standard Name Table (see below) |
+| Data variable `_FillValue` | **Compliant** | `-9999.0` in encoding |
+| Compression | **Compliant** | `zlib` with configurable `complevel` |
+| Grid mapping / CRS | **Not included** | Inherited from input; not explicitly written |
+| `cell_methods` | **Not included** | Optional CF attribute, not set |
+| Coordinate bounds | **Not included** | Optional CF attribute, not set |
+
+
+## Fully Compliant Attributes
+
+### Global Attributes
+
+All output files include these CF-recognized global attributes:
+
+| Attribute | Example Value | CF Section |
+|-----------|---------------|------------|
+| `Conventions` | `CF-1.8` | 2.6.1 |
+| `title` | `Standardized Precipitation Index (SPI-12)` | 2.6.2 |
+| `history` | `Created 2026-04-02T10:30:00` | 2.6.2 |
+| `institution` | `GOST/DEC Data Group, The World Bank` | 2.6.2 |
+| `source` | `TerraClimate monthly gridded data` | 2.6.2 |
+| `references` | Citation strings for McKee (1993), Vicente-Serrano (2010) | 2.6.2 |
+| `comment` | Computation description | 2.6.2 |
+
+Additional custom global attributes (`index_type`, `distribution`, `scale`, `periodicity`, `calibration_start_year`, `calibration_end_year`) are domain-specific metadata. CF allows custom attributes at the global level.
+
+### Data Variable Attributes
+
+| Attribute | Example | CF Status |
+|-----------|---------|-----------|
+| `long_name` | `Standardized Precipitation Evapotranspiration Index (Pearson III), 12-month` | Compliant (free-form) |
+| `units` | `1` | Compliant (CF standard for dimensionless) |
+| `valid_min` | `-3.09` | Compliant (CF Section 2.5.1) |
+| `valid_max` | `3.09` | Compliant (CF Section 2.5.1) |
+
+### Fitting Parameter Attributes
+
+Parameter files use `long_name`, `description`, `comment`, and `units` -- all CF-compatible. The `comment` attribute provides plain-language explanations (e.g., _"Higher alpha means the rainfall distribution is more symmetric"_).
+
+
+## Custom `standard_name` Values {#standard-name}
+
+::: {.callout-important}
+## Key Compatibility Note
+The `standard_name` attribute on SPI/SPEI data variables uses **custom names** that are not in the [CF Standard Name Table](https://cf-convention.github.io/Data/cf-standard-names/current/build/cf-standard-name-table.html). This is the primary deviation from strict CF compliance.
+:::
+
+### What is generated
+
+The variable naming pattern is `{index}_{distribution}_{scale}_{periodicity}`:
+
+| Variable Name | `standard_name` Value |
+|---------------|-----------------------|
+| `spi_gamma_3_month` | `spi_gamma_3_month` |
+| `spi_gamma_12_month` | `spi_gamma_12_month` |
+| `spei_pearson3_6_month` | `spei_pearson3_6_month` |
+| `spei_gev_12_month` | `spei_gev_12_month` |
+
+### Why custom names are used
+
+SPI and SPEI do not have entries in the CF Standard Name Table. There is no official CF standard name for drought indices. The custom `standard_name` is used because:
+
+1. It encodes the index type, distribution, scale, and periodicity in a single machine-readable string
+2. It enables programmatic variable discovery when working with multi-variable datasets
+3. The naming pattern is consistent and self-documenting
+
+### Impact on Third-Party Tools
+
+#### Tools that validate `standard_name` strictly
+
+Some NetCDF viewers validate `standard_name` against the CF Standard Name Table. When they encounter a name not in the table, behavior varies:
+
+| Tool | Behavior with Custom `standard_name` |
+|------|---------------------------------------|
+| **Panoply** | May refuse to open the file or fail to display the variable. This is the most common issue reported. |
+| **CF-checker** (`cfchecks`) | Will flag as a warning or error |
+| **THREDDS/OPeNDAP** | Generally tolerant; serves data regardless |
+| **CDO** | Ignores `standard_name`; works normally |
+| **NCO** | Ignores `standard_name`; works normally |
+
+#### Tools that are unaffected
+
+| Tool | Behavior |
+|------|----------|
+| **Python (xarray, netCDF4)** | Works normally; `standard_name` is just metadata |
+| **R (ncdf4, terra)** | Works normally |
+| **QGIS** | Works normally; reads by variable name |
+| **ArcGIS Pro** | Works normally |
+| **GrADS** | Works normally |
+| **GDAL/rasterio** | Works normally |
+
+### Workaround for Panoply
+
+If you need to open output files in Panoply, you can remove the `standard_name` attribute from the NetCDF file using Python:
+
+```{python}
+#| eval: false
+import xarray as xr
+
+ds = xr.open_dataset('spei_pearson3_12.nc')
+
+# Remove standard_name from all data variables
+for var in ds.data_vars:
+    if 'standard_name' in ds[var].attrs:
+        del ds[var].attrs['standard_name']
+
+ds.to_netcdf('spei_pearson3_12_panoply.nc')
+ds.close()
+```
+
+Or using NCO command-line tools:
+
+```{bash}
+#| eval: false
+ncatted -a standard_name,spei_pearson3_12_month,d,, spei_pearson3_12.nc -o spei_pearson3_12_panoply.nc
+```
+
+::: {.callout-tip}
+The `long_name` attribute is always present and is what most tools (including Panoply, after removing `standard_name`) will display as the variable label.
+:::
+
+
+## Coordinate Metadata
+
+Coordinate attributes (`standard_name`, `units`, `axis`, `calendar`) are **inherited from input data** and passed through to output files. The package does not overwrite or guarantee these attributes.
+
+If your input data has proper CF coordinate metadata (e.g., TerraClimate, CHIRPS, ERA5-Land), the output will preserve it. If your input lacks these attributes, the output will also lack them.
+
+### What CF expects for coordinates
+
+| Coordinate | `standard_name` | `units` | `axis` |
+|------------|-----------------|---------|--------|
+| `lat` | `latitude` | `degrees_north` | `Y` |
+| `lon` | `longitude` | `degrees_east` | `X` |
+| `time` | `time` | e.g., `days since 1900-01-01` | `T` |
+
+### Verifying your output
+
+You can check whether coordinates have proper CF metadata:
+
+```{python}
+#| eval: false
+import xarray as xr
+
+ds = xr.open_dataset('output.nc')
+
+for coord in ['lat', 'lon', 'time']:
+    if coord in ds.coords:
+        attrs = ds[coord].attrs
+        print(f"{coord}:")
+        print(f"  standard_name: {attrs.get('standard_name', 'MISSING')}")
+        print(f"  units: {attrs.get('units', 'MISSING')}")
+        print(f"  axis: {attrs.get('axis', 'MISSING')}")
+
+ds.close()
+```
+
+
+## Attributes Not Included
+
+The following optional CF attributes are not set by the package. They can be added manually if needed for specific use cases:
+
+### Grid Mapping / CRS
+
+CF Section 5.6 recommends a `grid_mapping` variable for geospatial datasets. This package assumes the input CRS is carried through by xarray. If you need explicit CRS metadata (e.g., for GIS interoperability), add it after computation:
+
+```{python}
+#| eval: false
+import xarray as xr
+
+ds = xr.open_dataset('output.nc')
+
+# Add WGS84 CRS variable
+ds['crs'] = xr.DataArray(
+    data=0,
+    attrs={
+        'grid_mapping_name': 'latitude_longitude',
+        'semi_major_axis': 6378137.0,
+        'inverse_flattening': 298.257223563,
+        'crs_wkt': 'GEOGCS["WGS 84", ...]'
+    }
+)
+for var in ds.data_vars:
+    if var != 'crs':
+        ds[var].attrs['grid_mapping'] = 'crs'
+
+ds.to_netcdf('output_with_crs.nc')
+ds.close()
+```
+
+### Cell Methods
+
+CF Section 7.3 defines `cell_methods` to describe how data values represent variation within cells. SPI/SPEI are standardized indices derived from cumulative distribution functions, not simple temporal aggregations, so standard `cell_methods` descriptors do not apply cleanly.
+
+### Coordinate Bounds
+
+CF Section 7.1 recommends `bounds` variables for coordinates. These are not generated but can be added if required by downstream tools.
+
+
+## Validating CF Compliance
+
+To check your output files against the CF Convention:
+
+```{bash}
+#| eval: false
+# Install the CF checker
+pip install cfchecker
+
+# Run validation
+cfchecks output.nc
+```
+
+Expected results for `precip-index` output:
+
+- `Conventions` attribute: **PASS**
+- Global attributes: **PASS**
+- Coordinate variables: **PASS** (if input data had proper CF metadata)
+- `standard_name` on data variables: **WARN** (custom names not in CF table)
+- `grid_mapping`: **INFO** (not present)
+- `cell_methods`: **INFO** (not present)
+
+The warnings about `standard_name` are expected and do not affect data quality or scientific validity.

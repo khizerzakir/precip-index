@@ -112,6 +112,7 @@ website:
         - technical/methodology.qmd
         - technical/distributions.qmd
         - technical/implementation.qmd
+        - technical/cf-compliance.qmd
         - technical/api-reference.qmd
         - text: "---"
         - technical/validation.qmd

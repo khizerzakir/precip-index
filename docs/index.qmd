@@ -152,7 +152,7 @@ Calibrate distribution parameters on historical data, save them as NetCDF, and a
 Benchmarked on a workstation with 128 GB RAM:
 
 - **CHIRPS v3 SPI-12** (0.05°, 17.3M cells, 539 months, ~69 GB) — **~2h 47m** with Gamma distribution, 12 spatial chunks
-- **TerraClimate SPEI-12** (0.04°, 37.3M cells, 804 months, ~224 GB) — **~26h** with Pearson III distribution, 32 spatial chunks
+- **TerraClimate SPEI-12** (0.04°, 37.3M cells, 816 months, ~226 GB) — **~26h** with Pearson III distribution, 32 spatial chunks
 
 Regional subsets (country-level) complete in seconds to minutes. Memory-efficient spatial tiling means you don't need a supercomputer. See [Performance Benchmarks](technical/implementation.qmd#performance-benchmarks) for detailed comparison.
 :::
@@ -176,7 +176,7 @@ SPI-12 (Gamma) calculated from **CHIRPS v3** at 0.05° resolution.
 
 ### SPEI 12-month from TerraClimate
 
-![SPEI-12 computed from global TerraClimate dataset (0.0417° ~ 4km) — December 2024](images/global-spei12-202412.png)
+![SPEI-12 computed from global TerraClimate dataset (0.0417° ~ 4km) — December 2025](images/global-spei12-202512.png)
 
 SPEI-12 (Pearson III) calculated from **TerraClimate** at 0.0417° ~ 4km resolution.
 :::

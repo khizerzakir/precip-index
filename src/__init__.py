@@ -75,6 +75,10 @@ from .config import (
     FITTED_INDEX_VALID_MAX,
     DEFAULT_CALIBRATION_START_YEAR,
     DEFAULT_CALIBRATION_END_YEAR,
+    DEFAULT_METADATA,
+    METADATA_PRESETS,
+    CREATOR_PRESETS,
+    build_metadata,
 )
 
 # Utility functions
@@ -142,6 +146,10 @@ __all__ = [
     "FITTED_INDEX_VALID_MAX",
     "DEFAULT_CALIBRATION_START_YEAR",
     "DEFAULT_CALIBRATION_END_YEAR",
+    "DEFAULT_METADATA",
+    "METADATA_PRESETS",
+    "CREATOR_PRESETS",
+    "build_metadata",
     # Utilities
     "calculate_pet",
     "eto_thornthwaite",

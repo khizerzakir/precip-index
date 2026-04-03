@@ -138,12 +138,14 @@ dmypy.json
 # input/
 global/
 # output/
+output/ago
 results/
 figures/
 temp/
 tmp/
 temp_md/
 temp_ipynb/
+temp_data/
 # test_output/
 
 # IDE settings
@@ -167,3 +169,7 @@ dask-worker-space/
 /.quarto/
 _site/
 _freeze/
+
+# Claude
+HANDOFF.md
+.claude/

@@ -33,7 +33,7 @@ SPI-12 (Gamma) calculated from **CHIRPS v3** at 0.05° resolution.
 
 SPEI-12 (Pearson III) calculated from **TerraClimate** at 0.0417° ~ 4km resolution.
 
-![SPEI-12 computed from global TerraClimate dataset (0.0417° ~ 4km) — December 2024](./docs/images/global-spei12-202412.png)
+![SPEI-12 computed from global TerraClimate dataset (0.0417° ~ 4km) — December 2025](./docs/images/global-spei12-202512.png)
 
 ## Credits
 

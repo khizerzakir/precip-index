@@ -166,27 +166,131 @@ MAX_SINGLE_CHUNK_GB = 2.0
 # DEFAULT METADATA ATTRIBUTES
 # =============================================================================
 
+# =============================================================================
+# METADATA CONFIGURATION
+# =============================================================================
+
+# Methodological references for SPI and SPEI.
+# These are always included regardless of data source.
+_REFERENCES_SPI = (
+    'McKee, T.B., Doesken, N.J., Kleist, J. (1993). '
+    'The relationship of drought frequency and duration to time scales. '
+    '8th Conference on Applied Climatology'
+)
+_REFERENCES_SPEI = (
+    'Vicente-Serrano, S.M., Begueria, S., Lopez-Moreno, J.I. (2010). '
+    'A Multiscalar Drought Index Sensitive to Global Warming: '
+    'The Standardized Precipitation Evapotranspiration Index. '
+    'Journal of Climate, 23(7), 1696-1718'
+)
+_REFERENCES_DEFAULT = f'{_REFERENCES_SPI}; {_REFERENCES_SPEI}'
+
+# ---------------------------------------------------------------------------
+# Data source presets
+# ---------------------------------------------------------------------------
+# Each preset provides 'source' and 'source_references' for a specific dataset.
+# Use with build_metadata(): build_metadata(source='terraclimate', ...)
+
+METADATA_PRESETS = {
+    'terraclimate': {
+        'source': 'TerraClimate monthly gridded data',
+        'source_references': (
+            'Abatzoglou, J.T., Dobrowski, S.Z., Parks, S.A., Hegewisch, K.C. (2018). '
+            'TerraClimate, a high-resolution global dataset of monthly climate and '
+            'climatic water balance from 1958-2015. Scientific Data, 5, 170191'
+        ),
+    },
+    'chirps': {
+        'source': 'CHIRPS v3.0 monthly precipitation',
+        'source_references': (
+            'Funk, C., Peterson, P., Landsfeld, M., Pedreros, D., Verdin, J., '
+            'Shukla, S., Husak, G., Rowland, J., Harrison, L., Hoell, A., '
+            'Michaelsen, J. (2015). The climate hazards infrared precipitation '
+            'with stations - a new environmental record for monitoring extremes. '
+            'Scientific Data, 2, 150066'
+        ),
+    },
+    'era5_land': {
+        'source': 'ERA5-Land monthly averaged reanalysis',
+        'source_references': (
+            'Munoz-Sabater, J., Dutra, E., Agust-Panareda, A., Albergel, C., '
+            'Arduini, G., Balsamo, G., Boussetta, S., Choulga, M., Harrigan, S., '
+            'Hersbach, H., Martens, B., Miralles, D.G., Piles, M., '
+            'Rodriguez-Fernandez, N.J., Zsoter, E., Buontempo, C., Thepaut, J.N. '
+            '(2021). ERA5-Land: a state-of-the-art global reanalysis dataset for '
+            'land applications. Earth System Science Data, 13(9), 4349-4383'
+        ),
+    },
+    'imerg': {
+        'source': 'GPM IMERG Final Precipitation L3 monthly',
+        'source_references': (
+            'Huffman, G.J., Stocker, E.F., Bolvin, D.T., Nelkin, E.J., '
+            'Tan, J. (2023). GPM IMERG Final Precipitation L3 1 month 0.1 '
+            'degree x 0.1 degree V07. Greenbelt, MD, Goddard Earth Sciences '
+            'Data and Information Services Center (GES DISC)'
+        ),
+    },
+    'cmorph': {
+        'source': 'CMORPH Climate Data Record monthly precipitation',
+        'source_references': (
+            'Xie, P., Joyce, R., Wu, S., Yoo, S.H., Yarosh, Y., Sun, F., '
+            'Lin, R. (2017). Reprocessed, Bias-Corrected CMORPH Global '
+            'High-Resolution Precipitation Estimates from 1998. '
+            'Journal of Hydrometeorology, 18(6), 1617-1641'
+        ),
+    },
+    'mswep': {
+        'source': 'MSWEP v2.8 multi-source weighted-ensemble precipitation',
+        'source_references': (
+            'Beck, H.E., Wood, E.F., Pan, M., Fisher, C.K., Miralles, D.G., '
+            'van Dijk, A.I.J.M., McVicar, T.R., Adler, R.F. (2019). '
+            'MSWEP V2 Global 3-Hourly 0.1 Precipitation: Methodology and '
+            'Quantitative Assessment. Bulletin of the American Meteorological '
+            'Society, 100(3), 473-500'
+        ),
+    },
+    'gpcc': {
+        'source': 'GPCC Full Data Monthly Product',
+        'source_references': (
+            'Schneider, U., Becker, A., Finger, P., Rustemeier, E., Ziese, M. '
+            '(2020). GPCC Full Data Monthly Product Version 2020 at 0.25: '
+            'Monthly Land-Surface Precipitation from Rain-Gauges built on '
+            'GTS-based and Historical Data. '
+            'Global Precipitation Climatology Centre (GPCC)'
+        ),
+    },
+}
+
+# ---------------------------------------------------------------------------
+# Creator presets
+# ---------------------------------------------------------------------------
+# Predefined creator profiles. Use with build_metadata(creator='worldbank').
+
+CREATOR_PRESETS = {
+    'worldbank': {
+        'institution': 'GOST/DEC Data Group, The World Bank',
+        'creator_name': 'Benny Istanto',
+        'creator_role': 'Climate Geographer',
+        'creator_email': 'bistanto@worldbank.org',
+    },
+}
+
+# ---------------------------------------------------------------------------
+# Default metadata
+# ---------------------------------------------------------------------------
 # Default global attributes for NetCDF output files.
-# Users can override these by passing global_attrs parameter or
-# by modifying these defaults before calling computation functions.
-#
-# Example — set your institution once at the start of your script:
-#   from config import DEFAULT_METADATA
-#   DEFAULT_METADATA['institution'] = 'My University'
-#   DEFAULT_METADATA['references'] = 'McKee et al. (1993)'
+# Uses TerraClimate + World Bank as defaults. Override via:
+#   1. build_metadata(source='chirps', creator='worldbank')
+#   2. Passing global_attrs={...} to any compute function
+#   3. Modifying DEFAULT_METADATA dict directly at runtime
 DEFAULT_METADATA = {
     'Conventions': 'CF-1.8',
     'cdm_data_type': 'GRID',
-    'institution': 'GOST/DEC Data Group, The World Bank',
-    'source': 'TerraClimate monthly gridded data (Abatzoglou et al., 2018)',
+    'institution': CREATOR_PRESETS['worldbank']['institution'],
+    'source': METADATA_PRESETS['terraclimate']['source'],
     'references': (
-        'McKee, T.B., Doesken, N.J., Kleist, J. (1993). '
-        'The relationship of drought frequency and duration to time scales. '
-        '8th Conference on Applied Climatology; '
-        'Vicente-Serrano, S.M., Begueria, S., Lopez-Moreno, J.I. (2010). '
-        'A Multiscalar Drought Index Sensitive to Global Warming: '
-        'The Standardized Precipitation Evapotranspiration Index. '
-        'Journal of Climate, 23(7), 1696-1718'
+        f"{_REFERENCES_DEFAULT}; "
+        f"{METADATA_PRESETS['terraclimate']['source_references']}"
     ),
     'comment': (
         'Computed using precip-index package. '
@@ -194,7 +298,90 @@ DEFAULT_METADATA = {
         'The data is developed to support hydrometeorological monitoring '
         'and assessment of extreme dry and wet periods.'
     ),
-    'creator_name': 'Benny Istanto',
-    'creator_role': 'Climate Geographer',
-    'creator_email': 'bistanto@worldbank.org',
+    'creator_name': CREATOR_PRESETS['worldbank']['creator_name'],
+    'creator_role': CREATOR_PRESETS['worldbank']['creator_role'],
+    'creator_email': CREATOR_PRESETS['worldbank']['creator_email'],
 }
+
+
+def build_metadata(
+    source: str = 'terraclimate',
+    creator: str = 'worldbank',
+    **kwargs
+) -> dict:
+    """
+    Build a metadata dict from presets and custom overrides.
+
+    Combines data source preset, creator preset, and any custom kwargs
+    into a ready-to-use metadata dict for the ``global_attrs`` parameter.
+
+    :param source: data source key from METADATA_PRESETS (e.g., 'terraclimate',
+        'chirps', 'era5_land', 'imerg', 'cmorph', 'mswep', 'gpcc'),
+        or a custom source string (used as-is if not a known preset key)
+    :param creator: creator key from CREATOR_PRESETS (e.g., 'worldbank'),
+        or 'custom' to provide creator fields via kwargs
+    :param kwargs: additional overrides (highest priority). Common keys:
+        institution, creator_name, creator_email, creator_role, comment
+
+    :return: metadata dict ready for ``global_attrs`` parameter
+
+    Examples::
+
+        # Use CHIRPS with default creator
+        meta = build_metadata(source='chirps')
+
+        # Use ERA5-Land with custom creator
+        meta = build_metadata(
+            source='era5_land',
+            creator='custom',
+            institution='Bogor Agricultural University',
+            creator_name='Benny Istanto',
+            creator_email='bennyistanto@ipb.ac.id',
+        )
+
+        # Fully custom
+        meta = build_metadata(
+            source='My custom dataset v1.0',
+            creator='custom',
+            institution='My Institute',
+            creator_name='Hello World',
+            creator_email='hello@example.com',
+        )
+
+        # Pass to compute function
+        spi_12 = spi(precip, scale=12, global_attrs=meta)
+    """
+    meta = {
+        'Conventions': 'CF-1.8',
+        'cdm_data_type': 'GRID',
+    }
+
+    # --- Data source ---
+    if source in METADATA_PRESETS:
+        preset = METADATA_PRESETS[source]
+        meta['source'] = preset['source']
+        meta['references'] = (
+            f"{_REFERENCES_DEFAULT}; {preset['source_references']}"
+        )
+    else:
+        # Custom source string
+        meta['source'] = source
+        meta['references'] = _REFERENCES_DEFAULT
+
+    # --- Creator ---
+    if creator in CREATOR_PRESETS:
+        meta.update(CREATOR_PRESETS[creator])
+    # If creator='custom', user provides via kwargs
+
+    # --- Standard comment ---
+    meta['comment'] = (
+        'Computed using precip-index package. '
+        'Calibration period defines the baseline for distribution fitting. '
+        'The data is developed to support hydrometeorological monitoring '
+        'and assessment of extreme dry and wet periods.'
+    )
+
+    # --- User overrides (highest priority) ---
+    meta.update(kwargs)
+
+    return meta

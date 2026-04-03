@@ -38,10 +38,12 @@ All output files include these CF-recognized global attributes:
 | `Conventions` | `CF-1.8` | 2.6.1 |
 | `title` | `Standardized Precipitation Index (SPI-12)` | 2.6.2 |
 | `history` | `Created 2026-04-02T10:30:00` | 2.6.2 |
-| `institution` | `GOST/DEC Data Group, The World Bank` | 2.6.2 |
-| `source` | `TerraClimate monthly gridded data` | 2.6.2 |
-| `references` | Citation strings for McKee (1993), Vicente-Serrano (2010) | 2.6.2 |
+| `institution` | Configurable (default: `GOST/DEC Data Group, The World Bank`) | 2.6.2 |
+| `source` | Configurable (default: `TerraClimate monthly gridded data`) | 2.6.2 |
+| `references` | Auto-built from method + data source citations | 2.6.2 |
 | `comment` | Computation description | 2.6.2 |
+
+The `institution`, `source`, `creator_*`, and `references` attributes are configurable via presets and overrides. See [Configuring Metadata](#configuring-metadata) below.
 
 Additional custom global attributes (`index_type`, `distribution`, `scale`, `periodicity`, `calibration_start_year`, `calibration_end_year`) are domain-specific metadata. CF allows custom attributes at the global level.
 
@@ -57,6 +59,94 @@ Additional custom global attributes (`index_type`, `distribution`, `scale`, `per
 ### Fitting Parameter Attributes
 
 Parameter files use `long_name`, `description`, `comment`, and `units` -- all CF-compatible. The `comment` attribute provides plain-language explanations (e.g., _"Higher alpha means the rainfall distribution is more symmetric"_).
+
+
+## Configuring Metadata {#configuring-metadata}
+
+The package provides **presets** for common data sources and creator profiles, so metadata is always populated but easily swappable.
+
+### Data Source Presets
+
+Available presets via `METADATA_PRESETS`:
+
+| Key | Source Description |
+|-----|-------------------|
+| `terraclimate` | TerraClimate monthly gridded data (default) |
+| `chirps` | CHIRPS v2.0 monthly precipitation |
+| `era5_land` | ERA5-Land monthly averaged reanalysis |
+| `imerg` | GPM IMERG Final Precipitation L3 monthly |
+| `cmorph` | CMORPH Climate Data Record monthly precipitation |
+| `mswep` | MSWEP v2.8 multi-source weighted-ensemble precipitation |
+| `gpcc` | GPCC Full Data Monthly Product |
+
+Each preset includes the `source` string and the full academic citation (`source_references`), which is automatically combined with the SPI/SPEI method references.
+
+### Creator Presets
+
+Available presets via `CREATOR_PRESETS`:
+
+| Key | Institution |
+|-----|-------------|
+| `worldbank` | GOST/DEC Data Group, The World Bank (default) |
+
+### Using `build_metadata()`
+
+The `build_metadata()` function combines presets with custom overrides:
+
+```{python}
+#| eval: false
+from config import build_metadata
+
+# Switch data source — keep default creator
+meta = build_metadata(source='chirps')
+
+# Switch both source and creator
+meta = build_metadata(
+    source='era5_land',
+    creator='custom',
+    institution='University of Tokyo',
+    creator_name='Taro Yamada',
+    creator_email='taro@example.ac.jp',
+)
+
+# Fully custom source (not a preset)
+meta = build_metadata(
+    source='My Regional Rain Gauge Network v2.0',
+    creator='custom',
+    institution='National Met Service',
+    creator_name='Jane Doe',
+    creator_email='jane@example.org',
+)
+
+# Pass to any compute function
+spi_12 = spi(precip, scale=12, global_attrs=meta)
+spei_12 = spei(precip, pet=pet, scale=12, global_attrs=meta)
+```
+
+### Alternative: Modify defaults at runtime
+
+To change the default for all subsequent calls without passing `global_attrs` each time:
+
+```{python}
+#| eval: false
+from config import DEFAULT_METADATA, METADATA_PRESETS, CREATOR_PRESETS
+
+# Switch to CHIRPS
+DEFAULT_METADATA['source'] = METADATA_PRESETS['chirps']['source']
+
+# Or set completely custom values
+DEFAULT_METADATA['institution'] = 'My University'
+DEFAULT_METADATA['creator_name'] = 'Jane Doe'
+DEFAULT_METADATA['creator_email'] = 'jane@example.edu'
+```
+
+### Priority order
+
+When attributes are set in multiple places, later values override earlier ones:
+
+1. `DEFAULT_METADATA` (lowest priority -- package defaults)
+2. Computed attributes (`title`, `history`, `distribution`, calibration years)
+3. `global_attrs` parameter (highest priority -- your overrides)
 
 
 ## Custom `standard_name` Values {#standard-name}

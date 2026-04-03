@@ -493,7 +493,7 @@ jupyter>=1.0.0      # Notebook support
 | Operation | Dataset | Grid Size | Time Steps | Chunks | Total Time |
 |-----------|---------|-----------|------------|--------|------------|
 | SPI-12 (Gamma) | CHIRPS v3 (0.05°) | 2400 × 7200 (17.3M cells) | 539 months | 12 | **~2h 47m** |
-| SPEI-12 (Pearson III) | TerraClimate (0.04°) | 4320 × 8640 (37.3M cells) | 804 months | 32 | **~26h** |
+| SPEI-12 (Pearson III) | TerraClimate (0.04°) | 4320 × 8640 (37.3M cells) | 816 months | 32 | **~26h** |
 
 ### Why Does TerraClimate SPEI Take ~9.5× Longer?
 
@@ -502,8 +502,8 @@ The difference comes from compounding factors across every dimension:
 | Factor | CHIRPS SPI-12 | TerraClimate SPEI-12 | Impact |
 |--------|--------------|---------------------|--------|
 | **Grid cells** | 17.3M | 37.3M | 2.2× more cells |
-| **Time steps** | 539 months (1981–2025) | 804 months (1958–2024) | 1.5× longer series |
-| **Dataset size** | ~69 GB | ~224 GB | 3.2× more I/O |
+| **Time steps** | 539 months (1981–2025) | 816 months (1958–2026) | 1.5× longer series |
+| **Dataset size** | ~69 GB | ~226 GB | 3.2× more I/O |
 | **Distribution** | Gamma (Method of Moments) | Pearson III (MLE) | ~2× slower fitting |
 | **Extra computation** | — | PET calculation | Additional overhead |
 | **Spatial chunks** | 12 | 32 | 2.7× more I/O cycles |

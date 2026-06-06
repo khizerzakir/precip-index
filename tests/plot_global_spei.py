@@ -12,7 +12,7 @@ Input:
     global/output/netcdf/wld_cli_terraclimate_spei_pearson3_12_month.nc
 
 Output:
-    docs/images/global-spei12-202412.png
+    docs/images/global-spei12-202512.png
 """
 
 import sys
@@ -38,10 +38,10 @@ from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 # Input / output paths
 BASE_DIR = Path(__file__).parent.parent
 INPUT_FILE = BASE_DIR / 'global' / 'output' / 'netcdf' / 'wld_cli_terraclimate_spei_pearson3_12_month.nc'
-OUTPUT_FILE = BASE_DIR / 'docs' / 'images' / 'global-spei12-202412.png'
+OUTPUT_FILE = BASE_DIR / 'docs' / 'images' / 'global-spei12-202512.png'
 
 # Time slice to plot
-TARGET_DATE = '2024-12-01'
+TARGET_DATE = '2025-12-01'
 
 # Variable name in the NetCDF
 VAR_NAME = 'spei_pearson3_12_month'
@@ -237,7 +237,7 @@ def plot_global_spei(da: xr.DataArray, output_path: Path):
 def main():
     """Main entry point."""
     print("=" * 60)
-    print(" GLOBAL SPEI-12 MAP — DECEMBER 2024")
+    print(" GLOBAL SPEI-12 MAP — DECEMBER 2025")
     print("=" * 60)
 
     # Check input exists
